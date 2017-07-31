@@ -1,4 +1,6 @@
-#term-photo
+# term-photo
+
+开发中...
 
 ## PURPOSE
 
@@ -21,6 +23,6 @@ fighting!
 ## View
 ![](./googleicon.png)
 
-转化如下
+转化如下, 颜色有损失
 
 ![](./google.png)
