@@ -13,7 +13,7 @@ Please check whether your xterm can support 256 color, and termp can only deal `
 ## TABLE
 
 There is a table that rgb can turn into xterm's color,
-[rgb_to_xterm](./rgb_to_xterm)
+[rgb_to_xterm](./rgb_to_xterm.txt)
 
 ## USE IT
 
