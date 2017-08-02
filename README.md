@@ -1,28 +1,30 @@
-# term-photo
+# termp
 
-开发中...
+I want to show photo in terminal, but it's diffcult!!
 
-## PURPOSE
+## INSTALL 
 
-由于256色就能够简单的表示出一张图片，终端中(我用的XTERM), 也支持256色，意味着理论上就颜色而言可以表示出图片。但是由于终端中一个点比一个像素点要大的多的多，实现起来没这么简单，还要考虑缩放
-
-fighting!
-
-## TEST
-
-测试数据文件
-
-[xterm_to_rgb](./xterm_to_rgb.txt)
-[rgb_to_xterm](./rgb_to_xterm.txt)
+``go get github.com/doofOfChoice/termp``
 
 ## NOTE
 
-记录了如何将RGB转化为XTERM中的256位颜色
-[Clike me](./note.md)
+Please check whether your xterm can support 256 color, and termp can only deal `png` and `jpg`.
 
-## View
-![](./googleicon.png)
+## TABLE
 
-转化如下, 颜色有损失
+There is a table that rgb can turn into xterm's color,
+[rgb_to_xterm](./rgb_to_xterm)
 
-![](./google.png)
+## USE IT
+
+```
+↑ ↓ ← → move up/down/left/right
+W increase 10 piexl in y
+S decrease 10 piexl in y
+D increase 10 piexl in x
+A decrease 10 piexl in x
+SPACE exit
+```
+
+## VIEW
+![](./test.png)

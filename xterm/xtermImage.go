@@ -1,4 +1,16 @@
-//base color
+package xterm
+
+import (
+	"fmt"
+	"image"
+	"math"
+
+	"github.com/nfnt/resize"
+)
+
+//The table that rgb can turn into xterm's color
+var table = map[uint32]int{
+	//base color
 	0x000000: 0,
 	0xcd0000: 1,
 	0x00cd00: 2,
@@ -17,7 +29,6 @@
 	0xffffff: 15,
 
 	//other color
-
 	//0x000000: 16,
 	0x00005f: 17,
 	0x000087: 18,
@@ -258,3 +269,132 @@
 	0xdadada: 253,
 	0xe4e4e4: 254,
 	0xeeeeee: 255,
+}
+
+type XtermColor int
+
+type XtermImage struct {
+	image      image.Image //orgin image
+	timage     image.Image //temp image
+	xtermImage [][]int     //xterm's color image
+}
+
+func NewXtermImage(img image.Image) *XtermImage {
+	image := XtermImage{img, img, nil}
+
+	return &image
+}
+
+//Get the xterm's color in aim position
+func (f *XtermImage) At(x, y int) (XtermColor, error) {
+	w, h := f.GetSize()
+
+	if x < 0 || y < 0 || x >= w || y >= h {
+		return 0, fmt.Errorf("the coord is out of bounds")
+	}
+
+	return XtermColor(f.xtermImage[y][x]), nil
+}
+
+//Get the Origin image's size
+func (f *XtermImage) GetOriginSize() (width, height int) {
+	width = f.image.Bounds().Max.X
+	height = f.image.Bounds().Max.Y
+
+	return
+}
+
+//Get temp image's size
+func (f *XtermImage) GetSize() (width, height int) {
+	width = f.timage.Bounds().Max.X
+	height = f.timage.Bounds().Max.Y
+
+	return
+}
+
+//Modify size by using specified width and height
+func (f *XtermImage) Resize(width, height uint, mode resize.InterpolationFunction) {
+	f.timage = resize.Resize(width, height, f.image, mode)
+	f.rgbToXterm()
+}
+
+//Modify size by using specified rate, and this image's size is based on orgin image
+//rw > 0
+//rh > 0
+func (f *XtermImage) ResizeRate(rw, rh float64, mode resize.InterpolationFunction) {
+	w, h := f.GetOriginSize()
+	wAfrer := uint(float64(w) * rw)
+	hAfter := uint(float64(h) * rh)
+	f.Resize(wAfrer, hAfter, mode)
+}
+
+//turn rgb into xterm's color
+func (f *XtermImage) rgbToXterm() {
+	w, h := f.GetSize()
+
+	f.xtermImage = make([][]int, h)
+
+	for i := 0; i < h; i++ {
+		for j := 0; j < w; j++ {
+			r, g, b, _ := f.timage.At(j, i).RGBA()
+			r /= 0x101
+			g /= 0x101
+			b /= 0x101
+
+			rgbv := Caculate(r, g, b)
+
+			xterm := table[GetKey(rgbv)]
+
+			f.xtermImage[i] = append(f.xtermImage[i], xterm)
+		}
+	}
+}
+
+//Caculate the value of rgb's hex
+func Caculate(r, g, b uint32) (rgb uint32) {
+	rgb += r << 16
+	rgb += g << 8
+	rgb += b
+
+	return
+}
+
+//unpack hex to (r, g, b)
+func Unpack(rgb uint32) (r, g, b uint32) {
+	r = (rgb & 0xff0000) >> 16
+	g = (rgb & 0xff00) >> 8
+	b = (rgb & 0xff)
+
+	return
+}
+
+//Find similarity
+func Similarity(rgb1, rgb2 uint32) float64 {
+	r1, g1, b1 := Unpack(rgb1)
+	r2, g2, b2 := Unpack(rgb2)
+	rv := math.Pow(float64(2*(r1-r2)), 2)
+	gv := math.Pow(float64(4*(g1-g2)), 2)
+	bv := math.Pow(float64(3*(b1-b2)), 2)
+	sqrt := math.Sqrt(rv + gv + bv)
+
+	return sqrt
+}
+
+//get the nearest color
+func GetKey(rgba uint32) uint32 {
+	var dia float64 = 0x0fffffff
+	var minv uint32
+	for k, _ := range table {
+		if rgba == k {
+			return rgba
+		}
+
+		if tdia := Similarity(rgba, k); tdia < dia {
+			dia = tdia
+			minv = k
+		}
+
+	}
+
+	return minv
+}
