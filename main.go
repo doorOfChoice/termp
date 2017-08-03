@@ -6,7 +6,7 @@ import (
 	"image/png"
 	"os"
 	"strings"
-	"termp/xterm"
+	"github.com/doorOfChoice/termp/xterm"
 
 	"github.com/nfnt/resize"
 	termbox "github.com/nsf/termbox-go"
